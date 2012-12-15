@@ -12,14 +12,22 @@
 }
 
 -(void)setup {
-    self.pingDisplayItem =  [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-    self.pingDisplayItem.highlightMode = YES;
-    self.pingDisplayItem.menu = [[NSMenu alloc] init];
-    self.pingAverageMenuItem = [self.pingDisplayItem.menu addItemWithTitle:@"Average: calculating.." action:nil keyEquivalent:@""];
+    self.statusItem =  [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    self.statusItem.highlightMode = YES;
+    self.statusItem.menu = [[NSMenu alloc] init];
+    self.pingAverageMenuItem = [self.statusItem.menu addItemWithTitle:@"Average: calculating.." action:nil keyEquivalent:@""];
+    NSMenuItem *quitItem = [self.statusItem.menu addItemWithTitle:@"Quit" action:nil keyEquivalent:@""];
+    quitItem.target = self;
+    quitItem.action = @selector(quitApplication);
+    [quitItem setEnabled:YES];
+}
+
+- (void)quitApplication {
+    [[NSApplication sharedApplication] terminate:self];
 }
 
 - (void)startPinging {
-    [self initiatePing];
+    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1.15 target:self selector:@selector(initiatePing) userInfo:nil repeats:YES];
 }
 
 - (void)stopPinging {
@@ -32,14 +40,12 @@
 }
 
 - (void)pingReturned:(NSNumber *)success {
-
     CFAbsoluteTime currentTime = CFAbsoluteTimeGetCurrent();
     if (success.boolValue == YES) {
         int pingMillis = (int) ((currentTime - self.pingTime) * 1000);
         [self displayAverage:pingMillis];
         [self displayStatusString:[NSString stringWithFormat:@"%ims", pingMillis]];
     }
-    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1.15 target:self selector:@selector(initiatePing) userInfo:nil repeats:NO];
 }
 
 - (void)displayAverage:(int)pingMillis {
@@ -58,7 +64,7 @@
 }
 
 - (void)displayStatusString:(NSString *)statusString {
-    self.pingDisplayItem.attributedTitle =
+    self.statusItem.attributedTitle =
                 [[NSAttributedString alloc] initWithString:statusString attributes:@{NSFontSizeAttribute : @2.0}];
 }
 @end

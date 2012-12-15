@@ -7,7 +7,7 @@
 
 
 @interface PingDisplayController : NSObject
-@property (nonatomic,strong)NSStatusItem *pingDisplayItem;
+@property (nonatomic,strong)NSStatusItem *statusItem;
 @property (nonatomic,strong)NSTimer *pingTimer;
 @property (nonatomic)CFAbsoluteTime pingTime;
 
