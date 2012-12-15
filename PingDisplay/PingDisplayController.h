@@ -11,6 +11,8 @@
 @property (nonatomic,strong)NSTimer *pingTimer;
 @property (nonatomic)CFAbsoluteTime pingTime;
 
+@property (nonatomic,strong)NSMenuItem *pingAverageMenuItem;
+
 -(void)setup;
 
 -(void)startPinging;

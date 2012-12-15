@@ -13,10 +13,13 @@
 
 -(void)setup {
     self.pingDisplayItem =  [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+    self.pingDisplayItem.highlightMode = YES;
+    self.pingDisplayItem.menu = [[NSMenu alloc] init];
+    self.pingAverageMenuItem = [self.pingDisplayItem.menu addItemWithTitle:@"Average: calculating.." action:nil keyEquivalent:@""];
 }
 
 - (void)startPinging {
-    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:0.85 target:self selector:@selector(initiatePing) userInfo:nil repeats:YES];
+    [self initiatePing];
 }
 
 - (void)stopPinging {
@@ -29,14 +32,29 @@
 }
 
 - (void)pingReturned:(NSNumber *)success {
-    if (success.boolValue == YES){
-        CFAbsoluteTime currentTime = CFAbsoluteTimeGetCurrent();
-        int pingMs = (long) ((currentTime - self.pingTime) * 1000);
-        NSString *pingDisplayString = [NSString stringWithFormat:@"%ims", pingMs];
-        [self displayStatusString:pingDisplayString];
-    } else {
-        [self displayStatusString:@"ms"];
+
+    CFAbsoluteTime currentTime = CFAbsoluteTimeGetCurrent();
+    if (success.boolValue == YES) {
+        int pingMillis = (int) ((currentTime - self.pingTime) * 1000);
+        [self displayAverage:pingMillis];
+        [self displayStatusString:[NSString stringWithFormat:@"%ims", pingMillis]];
     }
+    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1.15 target:self selector:@selector(initiatePing) userInfo:nil repeats:NO];
+}
+
+- (void)displayAverage:(int)pingMillis {
+    static int averageSamples[20];
+    static int pingCount = 0;
+    averageSamples[pingCount % 20] = pingMillis;
+    if (pingCount >= 19) {
+            int sum = 0;
+            for (int i = 0; i < 20; i++) {
+                sum += averageSamples[i];
+            }
+            double average = (double) sum / 20.0;
+            self.pingAverageMenuItem.title = [NSString stringWithFormat:@"Average: %0.1fms", average];
+        }
+    pingCount++;
 }
 
 - (void)displayStatusString:(NSString *)statusString {
